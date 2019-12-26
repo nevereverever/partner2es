@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    status : 这个用于设置log4j2自身内部的信息输出,可以不设置,当设置成trace时,会看到log4j2内部各种详细输出,默认是OFF
+    monitorInterval : Log4j能够自动检测修改配置文件和重新配置本身, 设置间隔秒数。此处表示每隔10秒重读一次配置文件，默认是6s
+    packages: 自定义的Appender类所在包的包名，这会告诉log4j2去加载这个包下的类
+-->
+<Configuration status="error" monitorInterval="10">
+	<Properties>
+        <!-- 配置日志文件输出目录,此处为项目根目录下的logs文件夹 -->
+        <Property name="appName">partner2es</Property>
+        <Property name="log4jRoot">/app/log/${projectName}</Property>
+        <Property name="layOutPattern">%d [%-5p][%t][%c] %m %n%n</Property>
+    </Properties>
+
+   <Appenders>
+   <!--这个输出控制台的配置-->
+     <Console name="console" target="SYSTEM_OUT">
+     	<!--日志输出的格式-->
+            <!--
+                %d{yyyy-MM-dd HH:mm:ss, SSS} : 日志生产时间,输出到毫秒的时间
+                %-5level : 输出日志级别，-5表示左对齐并且固定输出5个字符，如果不足在右边补0
+                %c : logger的名称(%logger)
+                %t : 输出当前线程名称
+                %p : 日志输出格式
+                %m : 日志内容，即 logger.info("message")
+                %n : 换行符
+                %C : Java类名(%F)
+                %L : 行号
+                %M : 方法名
+                %l : 输出语句所在的行数, 包括类名、方法名、文件名、行数
+             -->
+       <PatternLayout charset="UTF-8" pattern="${layOutPattern}">
+       </PatternLayout>
+     </Console>
+     
+     <RollingRandomAccessFile name="allFile" fileName="${log4jRoot}/all.log" filePattern="${log4jRoot}/all_%d{yyyy-MM-dd}_%i.log">
+         <Filters>
+             <ThresholdFilter level="all" onMatch="ACCEPT" onMismatch="DENY"/>
+         </Filters>
+         <PatternLayout charset="UTF-8" pattern="${layOutPattern}"/>
+         <Policies>
+         	 <TimeBasedTriggeringPolicy interval="1"/>      <!--每1小时/分/... 生成一个文件, 时间依据filePattern的配置-->
+             <SizeBasedTriggeringPolicy size="100MB"/>
+         </Policies>
+         <DefaultRolloverStrategy max="20">
+                <Delete basePath="${log4jRoot}/" maxDepth="1">
+                    <IfFileName glob="*.log" />
+                    <IfLastModified age="2d" />
+                </Delete>
+          </DefaultRolloverStrategy>
+     </RollingRandomAccessFile>
+
+
+<!--      自定义Appender，详情见PowersiLogAppender2 -->
+<!--      <PowersiLog name="powersitestfile" app="${appName}" group="${projectName}" model="${projectName}"> -->
+<!--      </PowersiLog> -->
+   </Appenders>
+   
+   <!--然后定义logger，只有定义了logger并引入的appender，appender才会生效-->
+    <Loggers>
+    	<AsyncRoot level="error">
+    		<AppenderRef ref="allFile"/>
+            <AppenderRef ref="console"/>
+        </AsyncRoot>
+         <AsyncLogger name="com.young" level="debug"  additivity="false">
+            <AppenderRef ref="allFile"/>
+            <AppenderRef ref="console"/>
+         </AsyncLogger>
+
+        <!-- log4j.logger.jdbc.sqlonly=OFF
+			 log4j.logger.jdbc.sqltiming=OFF
+			 log4j.logger.jdbc.audit=OFF
+			 log4j.logger.jdbc.resultset=OFF
+			 log4j.logger.jdbc.connection=OFF
+			 log4j.logger.com.mchange.v2.c3p0=error
+				
+			 log4j.additivity.jdbc.sqltiming=false
+		 -->
+   </Loggers>
+</Configuration>
