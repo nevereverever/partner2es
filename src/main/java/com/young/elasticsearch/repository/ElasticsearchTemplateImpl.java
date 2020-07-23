@@ -309,7 +309,9 @@ public class ElasticsearchTemplateImpl<T, M> implements IElasticsearchTemplate<T
 
     @Override
     public boolean delete(MetaData metaData, T t, M id, String routing) throws Exception {
-        metaData = dealMetaData(metaData, t.getClass());
+        if (t != null) {
+            metaData = dealMetaData(metaData, t.getClass());
+        }
         String indexName = metaData.getIndexname();
         String indexType = metaData.getIndextype();
 
