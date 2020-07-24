@@ -8,6 +8,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -127,6 +128,14 @@ public interface IElasticsearchTemplate<T,M> {
      * @return 是否删除成功
      */
     boolean deleteById(MetaData metaData, M id) throws Exception;
+
+    /**
+     * 根据Id删除文档
+     * @param IndexName 索引名称
+     * @param id 文档Id
+     * @return true删除成功，false删除失败
+     */
+    boolean deleteById(String IndexName, String id) throws IOException;
 
     /**
      * 根据条件删除

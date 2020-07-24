@@ -40,6 +40,8 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -352,6 +354,18 @@ public class ElasticsearchTemplateImpl<T, M> implements IElasticsearchTemplate<T
     @Override
     public boolean deleteById(MetaData metaData, M id) throws Exception {
         return delete(metaData,null,id,null);
+    }
+
+    @Override
+    public boolean deleteById(String IndexName, String id) throws IOException {
+        //对索引名称和文档Id进行非空判断
+        Assert.isTrue(!StringUtils.isEmpty(IndexName)&&!StringUtils.isEmpty(id),"索引名称或文档Id不能为空");
+        //创建删除请求
+        DeleteRequest request = new DeleteRequest(IndexName,"_doc",id);
+        //进行删除
+        DeleteResponse deleteResponse = this.restHighLevelClient.delete(request, RequestOptions.DEFAULT);
+        //返回值为True表示删除成功，False表示删除失败
+        return deleteResponse.getResult() == DocWriteResponse.Result.DELETED;
     }
 
     @Override

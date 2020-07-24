@@ -26,17 +26,28 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date: 2019/12/17 10:34
  * @description: elasticsearch配置类
  **************************/
+
 public class ElasticsearchConfiguration {
     @Autowired
     private Properties configs;
+
     //是否已经初始化
     private boolean isInited = false;
     //http客户端连接池
     private Map<String, RestHighLevelClient> restClientPool = new ConcurrentHashMap<String, RestHighLevelClient>();
 
+    public Properties getConfigs() {
+        return configs;
+    }
+
+    public void setConfigs(Properties configs) {
+        this.configs = configs;
+    }
+
     public void initBySpring() {
         this.initEsClient("");
     }
+
 
     /**
      * 根据文件路径初始化es客户端连接
