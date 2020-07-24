@@ -128,7 +128,6 @@ public class ElasticsearchTemplateImpl<T, M> implements IElasticsearchTemplate<T
         //获取索引名称和索引类型
         String indexName = metaData.getIndexname();
         String indexType = metaData.getIndextype();
-
         //获取对象中被@ESID注解的字段值
         M id = EsTools.getESId(t);
 
@@ -176,6 +175,22 @@ public class ElasticsearchTemplateImpl<T, M> implements IElasticsearchTemplate<T
     @Override
     public boolean save(T t) throws Exception {
         return save(null, t);
+    }
+
+    @Override
+    public boolean save(T t, String indexName, String id) throws NoSuchFieldException, IllegalAccessException, IOException {
+        //对文档对象非空判断
+        Assert.notNull(t,"文档对象不能为空");
+        //对索引名称和文档Id非空判断
+        Assert.isTrue(!StringUtils.isEmpty(indexName)&&!StringUtils.isEmpty(id),"索引名称或文档Id不能为空");
+        //判断文档是否存在
+        Assert.isTrue(!this.exist(indexName,id),"文档已存在");
+        //创建创建索引请求
+        IndexRequest request = new IndexRequest(indexName).id(id).source(EsTools.convertToJson(t),XContentType.JSON);
+        //保存文档
+        IndexResponse indexResponse = restHighLevelClient.index(request, RequestOptions.DEFAULT);
+        //返回值为True表示保存成功，False表示保存失败
+        return indexResponse.getResult() == DocWriteResponse.Result.CREATED;
     }
 
     @Override
@@ -357,11 +372,11 @@ public class ElasticsearchTemplateImpl<T, M> implements IElasticsearchTemplate<T
     }
 
     @Override
-    public boolean deleteById(String IndexName, String id) throws IOException {
+    public boolean deleteById(String indexName, String id) throws IOException {
         //对索引名称和文档Id进行非空判断
-        Assert.isTrue(!StringUtils.isEmpty(IndexName)&&!StringUtils.isEmpty(id),"索引名称或文档Id不能为空");
+        Assert.isTrue(!StringUtils.isEmpty(indexName)&&!StringUtils.isEmpty(id),"索引名称或文档Id不能为空");
         //创建删除请求
-        DeleteRequest request = new DeleteRequest(IndexName,"_doc",id);
+        DeleteRequest request = new DeleteRequest(indexName,"_doc",id);
         //进行删除
         DeleteResponse deleteResponse = this.restHighLevelClient.delete(request, RequestOptions.DEFAULT);
         //返回值为True表示删除成功，False表示删除失败
@@ -490,6 +505,18 @@ public class ElasticsearchTemplateImpl<T, M> implements IElasticsearchTemplate<T
         }
 
         return EsTools.convertToObj(getResponse.getSourceAsString(),clazz);
+    }
+
+    @Override
+    public boolean exist(String indexName, String id) throws IOException {
+        //对索引名称和文档Id非空判断
+        Assert.isTrue(!StringUtils.isEmpty(indexName)&&!StringUtils.isEmpty(id),"索引名称或文档Id不能为空");
+        //创建查询请求
+        GetRequest getRequest = new GetRequest(indexName).id(id);
+        //判断该文档是否存在
+        boolean exists = restHighLevelClient.exists(getRequest, RequestOptions.DEFAULT);
+        //True:文档以存在，False：文档不存在
+        return exists;
     }
 
     private EsResult<T> getPagingResult(SearchRequest searchRequest, EsPage esPage, SearchSourceBuilder searchSourceBuilder, boolean searchAfter, boolean isHighlight, boolean isPrintLog, Class<T> clazz) throws IOException, NoSuchFieldException, IllegalAccessException, InstantiationException {

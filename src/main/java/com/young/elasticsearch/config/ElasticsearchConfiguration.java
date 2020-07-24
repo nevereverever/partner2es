@@ -37,14 +37,6 @@ public class ElasticsearchConfiguration {
     //http客户端连接池
     private Map<String, RestHighLevelClient> restClientPool = new ConcurrentHashMap<String, RestHighLevelClient>();
 
-    public Properties getConfigs() {
-        return configs;
-    }
-
-    public void setConfigs(Properties configs) {
-        this.configs = configs;
-    }
-
     public void initBySpring() {
         this.initEsClient("");
     }

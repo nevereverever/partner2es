@@ -47,6 +47,15 @@ public interface IElasticsearchTemplate<T,M> {
     boolean save(T t) throws Exception;
 
     /**
+     * 保存文档
+     * @param t 数据对象
+     * @param indexName 索引名称
+     * @param id 文档Id
+     * @return true：保存成功 false：保存失败
+     */
+    boolean save(T t, String indexName, String id) throws NoSuchFieldException, IllegalAccessException, IOException;
+
+    /**
      * 以Map形式保存
      * @param metaData 索引信息
      * @param id
@@ -131,11 +140,11 @@ public interface IElasticsearchTemplate<T,M> {
 
     /**
      * 根据Id删除文档
-     * @param IndexName 索引名称
+     * @param indexName 索引名称
      * @param id 文档Id
      * @return true删除成功，false删除失败
      */
-    boolean deleteById(String IndexName, String id) throws IOException;
+    boolean deleteById(String indexName, String id) throws IOException;
 
     /**
      * 根据条件删除
@@ -235,4 +244,14 @@ public interface IElasticsearchTemplate<T,M> {
      * @return
      */
     T getById(M docId, MetaData metaData, Class<T> clazz) throws Exception;
+
+    //判断-----------------------------------------------------
+
+    /**
+     * 根据索引名称和文档Id查询该文档是否存在
+     * @param indexName 索引名称
+     * @param id 文档Id
+     * @return True：文档存在 False：文档不存在
+     */
+    boolean exist(String indexName, String id) throws IOException;
 }
