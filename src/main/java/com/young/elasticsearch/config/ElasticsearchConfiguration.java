@@ -12,6 +12,7 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 import java.io.FileInputStream;
@@ -48,6 +49,18 @@ public class ElasticsearchConfiguration {
         this.initEsClient("");
     }
 
+
+    /**
+     * 2020-07-24 由于springboot无法使用configs注入,可手动set
+     * @return
+     */
+    public Properties getConfigs() {
+        return configs;
+    }
+
+    public void setConfigs(Properties configs) {
+        this.configs = configs;
+    }
 
     /**
      * 根据文件路径初始化es客户端连接
