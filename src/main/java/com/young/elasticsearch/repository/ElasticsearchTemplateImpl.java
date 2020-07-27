@@ -36,6 +36,7 @@ import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortBuilder;
@@ -513,6 +514,10 @@ public class ElasticsearchTemplateImpl<T, M> implements IElasticsearchTemplate<T
         Assert.isTrue(!StringUtils.isEmpty(indexName)&&!StringUtils.isEmpty(id),"索引名称或文档Id不能为空");
         //创建查询请求
         GetRequest getRequest = new GetRequest(indexName).id(id);
+        //禁用检索源，默认为启用 提高查询效率
+        getRequest.fetchSourceContext(new FetchSourceContext(false));
+        //禁止存储任何字段 提高查询效率
+        getRequest.storedFields("_none_");
         //判断该文档是否存在
         boolean exists = restHighLevelClient.exists(getRequest, RequestOptions.DEFAULT);
         //True:文档以存在，False：文档不存在
